@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Đố Vui Khối Bao Đồng</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f59e0b;
+            --bg-color: #f0fdf4;
+            --text-color: #1f2937;
+            --correct: #10b981;
+            --incorrect: #ef4444;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            max-width: 700px;
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        p.subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Stats Bar */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .streak {
+            color: var(--secondary);
+        }
+
+        /* Question Area */
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: var(--correct);
+            color: #065f46;
+        }
+
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: var(--incorrect);
+            color: #991b1b;
+        }
+
+        /* Explanation Box */
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #e0f2fe;
+            border-left: 5px solid var(--primary);
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .explanation h3 {
+            margin: 0 0 10px 0;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+        }
+
+        .explanation p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Action Buttons */
+        .btn-next, .btn-start {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-next { display: none; }
+
+        .btn-next:hover, .btn-start:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Screens */
+        #quiz-screen, #result-screen {
+            display: none;
+        }
+
+        .result-content {
+            text-align: center;
+        }
+
+        .result-content h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #eff6ff;
+            border: 10px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin: 20px auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Màn hình bắt đầu -->
+    <div id="start-screen">
+        <h1>Ôn Tập Đố Vui Khối Bao Đồng</h1>
+        <p class="subtitle">Năm học: 2026-2027</p>
+        <p style="text-align: center; font-size: 1.1rem; margin-bottom: 30px;">
+            Hệ thống gồm các câu hỏi trắc nghiệm tổng hợp từ: <br>
+            <i>Giáng sinh, Rao giảng, Tử nạn - Phục sinh, Thánh Tử Đạo VN & Kinh nguyện.</i><br>
+            Hãy cùng ôn tập thật tốt nhé!
+        </p>
+        <button class="btn-start" onclick="startQuiz()">Bắt Đầu Làm Bài</button>
+    </div>
+
+    <!-- Màn hình câu hỏi -->
+    <div id="quiz-screen">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="stats">
+            <span id="question-count">Câu: 1/?</span>
+            <span class="streak" id="streak-counter">🔥 Streak: 0</span>
+        </div>
+
+        <div class="question-text" id="question-text">Đang tải câu hỏi...</div>
+        
+        <div class="options" id="options-container">
+            <!-- Các nút tùy chọn sẽ được render ở đây -->
+        </div>
+
+        <div class="explanation" id="explanation-box">
+            <h3>Lời giải thích:</h3>
+            <p id="explanation-text"></p>
+        </div>
+
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">Tiếp tục ➔</button>
+    </div>
+
+    <!-- Màn hình kết quả -->
+    <div id="result-screen" class="result-content">
+        <h2>Hoàn Thành!</h2>
+        <p>Cảm ơn bạn đã hoàn thành bài ôn tập.</p>
+        <div class="score-circle">
+            <span id="final-score">0</span>
+        </div>
+        <p id="result-message" style="font-size: 1.2rem; font-weight: 600;"></p>
+        <button class="btn-start" onclick="location.reload()">Làm Lại Từ Đầu</button>
+    </div>
+</div>
+
+<script>
+    // TỔNG HỢP TOÀN BỘ KIẾN THỨC TỪ TÀI LIỆU
+    const questions = [
+        // PHẦN I: GIÁNG SINH & THƠ ẤU
+        {
+            question: "Theo Lc 2, 4 Đức Giêsu sinh ra ở thành nào?",
+            options: ["Thành Nazareth", "Thành Bêlem", "Thành Giêrusalem", "Thành Caphácnaum"],
+            answer: 1,
+            explanation: "Chúa Giêsu sinh ra tại Thành Bêlem (Lc 2, 4)."
+        },
+        {
+            question: "Khi Thánh Giuse định bỏ Đức Mẹ thì điều gì đã xảy ra làm ông thay đổi quyết định?",
+            options: ["Đức Maria giải thích cho ông hiểu", "Sứ thần Chúa hiện ra báo mộng", "Các mục đồng đến làm chứng", "Ông Dacaria khuyên bảo"],
+            answer: 1,
+            explanation: "Sứ thần Chúa hiện ra với Giuse trong giấc mộng, cho ông biết Đức Mẹ mang thai do quyền năng Chúa Thánh Thần (Mt 1, 20-21)."
+        },
+        {
+            question: "Trong biến cố Truyền Tin, Thiên Chúa đã sai sứ thần nào đến gặp Đức Maria?",
+            options: ["Sứ thần Micae", "Sứ thần Raphael", "Sứ thần Gabriel", "Sứ thần Uriel"],
+            answer: 2,
+            explanation: "Thiên Chúa đã sai Sứ thần Gabriel đến gặp Đức Maria (Lc 1, 26-27)."
+        },
+        {
+            question: "Sau khi nghe lời sứ thần truyền tin, Đức Maria đã nói gì?",
+            options: ["Việc đó xảy ra cách nào được?", "Vâng, tôi đây là nữ tỳ của Chúa, xin Chúa cứ làm cho tôi như lời sứ thần nói.", "Ngợi khen Đức Chúa là Thiên Chúa Israel.", "Linh hồn tôi ngợi khen Đức Chúa."],
+            answer: 1,
+            explanation: "Đức Maria đã thưa tiếng xin vâng: 'Vâng, tôi đây là nữ tỳ của Chúa, xin Chúa cứ làm cho tôi như lời sứ thần nói' (Lc 1, 38)."
+        },
+        {
+            question: "Đức Maria đã ở lại giúp đỡ bà Elisabeth trong bao lâu?",
+            options: ["1 tháng", "2 tháng", "3 tháng", "6 tháng"],
+            answer: 2,
+            explanation: "Đức Maria đã ở lại với bà Elisabeth khoảng 3 tháng (Lc 1, 56)."
+        },
+        {
+            question: "Các nhà chiêm tinh đã tặng những lễ vật gì cho Hài Nhi Giêsu?",
+            options: ["Vàng, bạc và lụa là", "Vàng, nhũ hương và mộc dược", "Nhũ hương, mộc dược và chiên con", "Sữa, mật ong và vàng"],
+            answer: 1,
+            explanation: "Họ đã tặng Vàng, nhũ hương và mộc dược (Mt 2, 11)."
+        },
+        {
+            question: "Chúa Giêsu ở lại Đền Thờ Giêrusalem năm Người bao nhiêu tuổi, và ở lại mấy ngày?",
+            options: ["10 tuổi, 2 ngày", "12 tuổi, 3 ngày", "15 tuổi, 3 ngày", "30 tuổi, 40 ngày"],
+            answer: 1,
+            explanation: "Chúa ở lại Đền thờ 3 ngày, lúc ấy Người 12 tuổi (Lc 2, 46-47)."
+        },
+        {
+            question: "Thánh Gioan Tẩy Giả lớn hơn Chúa Giêsu bao nhiêu tuổi?",
+            options: ["Bằng tuổi", "Lớn hơn 3 tháng", "Lớn hơn 6 tháng", "Lớn hơn 1 năm"],
+            answer: 2,
+            explanation: "Gioan Tẩy Giả lớn hơn Chúa Giêsu 6 tháng (Lc 1, 36)."
+        },
+        // PHẦN II: RAO GIẢNG TIN MỪNG
+        {
+            question: "Chúa Giêsu bắt đầu sứ vụ rao giảng năm bao nhiêu tuổi?",
+            options: ["25 tuổi", "30 tuổi", "33 tuổi", "40 tuổi"],
+            answer: 1,
+            explanation: "Chúa Giêsu bắt đầu rao giảng năm 30 tuổi, sau khi chịu phép rửa tại sông Giođan."
+        },
+        {
+            question: "Theo Tin Mừng Thánh Mattheu, nội dung lời rao giảng đầu tiên của Chúa Giêsu là gì?",
+            options: ["Hãy yêu thương nhau như Thầy đã yêu thương", "Anh em hãy sám hối, vì Nước Trời đã đến gần", "Phúc cho những ai có tâm hồn nghèo khó", "Ta là đường, là sự thật và là sự sống"],
+            answer: 1,
+            explanation: "Nội dung lời rao giảng đầu tiên: 'Anh em hãy sám hối, vì Nước Trời đã đến gần' (Mt 4, 17)."
+        },
+        {
+            question: "Chúa Giêsu đã sử dụng bao nhiêu dụ ngôn để nói về Lòng thương xót của Chúa?",
+            options: ["3 dụ ngôn", "5 dụ ngôn", "6 dụ ngôn", "8 dụ ngôn"],
+            answer: 2,
+            explanation: "Có 6 dụ ngôn nói về Lòng thương xót: Người cha nhân hậu, Con chiên lạc, Đồng bạc bị mất, Người Samari nhân hậu, Hai người mắc nợ, Người đầy tớ mắc nợ không biết thương xót."
+        },
+        {
+            question: "Phép lạ đầu tiên mà Chúa Giêsu thực hiện là gì?",
+            options: ["Hóa bánh ra nhiều", "Chữa người phong hủi", "Cho Ladarô sống lại", "Hóa nước thành rượu ở tiệc cưới Cana"],
+            answer: 3,
+            explanation: "Phép lạ đầu tiên là Hóa nước thành rượu ở tiệc cưới Cana (Ga 2, 1-11)."
+        },
+        {
+            question: "Chúa Giêsu đã làm gì khi thấy đền thờ Giêrusalem bị biến thành nơi buôn bán?",
+            options: ["Bỏ đi ra ngoài", "Đuổi những người mua bán, lật bàn đổi bạc", "Gọi các môn đệ đến khuyên bảo họ", "Xin họ trả lại sự trang nghiêm"],
+            answer: 1,
+            explanation: "Người đuổi tất cả những người đang mua bán trong Đền Thờ, lật bàn đổi bạc và nói: 'Nhà Ta sẽ được gọi là nhà cầu nguyện, thế mà các ngươi lại biến thành sào huyệt của bọn cướp.' (Mt 21, 12-17)."
+        },
+        // PHẦN III: TỬ NẠN VÀ PHỤC SINH
+        {
+            question: "Trong Bữa Tiệc Ly, Chúa Giêsu đã làm cử chỉ đặc biệt gì để nêu gương khiêm nhường?",
+            options: ["Cúi xuống rửa chân cho các môn đệ", "Nhường chỗ ngồi cho Phêrô", "Phục vụ thức ăn cho môn đệ", "Khóc lóc trước mặt môn đệ"],
+            answer: 0,
+            explanation: "Chúa Giêsu cúi xuống rửa chân cho các môn đệ để làm gương khiêm nhường phục vụ (Ga 13, 4-5)."
+        },
+        {
+            question: "Ai là người đã chối Chúa Giêsu 3 lần?",
+            options: ["Giuđa Ítcariốt", "Phêrô", "Tôma", "Gioan"],
+            answer: 1,
+            explanation: "Thánh Phêrô đã chối Chúa 3 lần trước khi gà gáy (Mt 26, 69-75)."
+        },
+        {
+            question: "Chúa Giêsu đáp lại anh trộm lành trên thập giá thế nào?",
+            options: ["Tội lỗi của anh đã được tha", "Hãy tin vào Ta, anh sẽ sống", "Hôm nay, anh sẽ được ở với Ta trên Thiên Đàng", "Mọi sự đã hoàn tất"],
+            answer: 2,
+            explanation: "Chúa đáp: 'Hôm nay, anh sẽ được ở với Ta trên Thiên Đàng' (Lc 23, 43)."
+        },
+        {
+            question: "Ai là người đầu tiên đến mộ Chúa Giêsu vào sáng sớm ngày Chúa Nhật?",
+            options: ["Đức Maria (Mẹ Chúa)", "Maria Mađalêna", "Phêrô và Gioan", "Các phụ nữ ở Giêrusalem"],
+            answer: 1,
+            explanation: "Bà Maria Mađalêna là người đầu tiên đến mộ sáng sớm (Ga 20, 1)."
+        },
+        {
+            question: "Khi hiện ra với các môn đệ, lời đầu tiên Chúa Phục Sinh nói là gì?",
+            options: ["Anh em có tin không?", "Đừng sợ!", "Bình an cho anh em.", "Ta đã sống lại như lời đã báo trước."],
+            answer: 2,
+            explanation: "Chúa nói: 'Bình an cho anh em' (Ga 20, 19)."
+        },
+        // THÁNH TỬ ĐẠO & KINH NGUYỆN
+        {
+            question: "Lễ Kính chung cho các Thánh tử đạo Việt Nam là ngày nào?",
+            options: ["24 tháng 11", "01 tháng 11", "19 tháng 6", "15 tháng 8"],
+            answer: 0,
+            explanation: "Lễ Kính chung các Thánh tử đạo Việt Nam là ngày 24 tháng 11 (hoặc Chúa nhật giữa tháng 11 trước lễ Chúa Kitô Vua)."
+        },
+        {
+            question: "Thánh Anê Lê Thị Thành (Bà Đê) bị bắt và kết án vì tội gì?",
+            options: ["Làm loạn chống triều đình", "Che giấu đạo trưởng (Linh mục)", "Không chịu nộp thuế", "Bỏ đạo công giáo"],
+            answer: 1,
+            explanation: "Bà Đê bị bắt vì tội che giấu đạo trưởng (Linh mục Jean Paul Galy Carles - Lý) trong nhà."
+        },
+        {
+            question: "Câu nói nổi tiếng của Thánh Anê Lê Thị Thành khi thấy con gái khóc thương mình bị đánh đòn là gì?",
+            options: ["Con đừng khóc, Chúa sẽ cứu mẹ.", "Mẹ vui lòng chịu khổ vì Chúa Giêsu, sao con lại khóc? Mẹ mặc áo hoa hồng đấy.", "Hãy cầu nguyện cho mẹ được tử đạo.", "Hãy báo cho anh em đi trốn đi."],
+            answer: 1,
+            explanation: "Ngài âu yếm an ủi: 'Con đừng khóc, mẹ mặc áo hoa hồng đấy, mẹ vui lòng chịu khổ vì Chúa Giêsu, sao con lại khóc?'"
+        },
+        {
+            question: "Chủng sinh Tôma Trần Văn Thiện đã trả lời quan khi bị dụ dỗ bỏ đạo để ban chức quyền thế nào?",
+            options: ["Tôi thà chết không bỏ đạo", "Tôi chỉ mong chức quyền trên trời, chứ không màng đến chức quyền thế gian.", "Xin quan tha cho tôi, tôi chỉ là học trò.", "Chúa của tôi lớn hơn vua quan."],
+            answer: 1,
+            explanation: "Thánh Tôma trả lời: 'Tôi chỉ mong chức quyền trên trời, chứ không màng đến chức quyền thế gian.'"
+        },
+        {
+            question: "Theo Kinh Mười Điều Răn, hai điều tóm lược lại là gì?",
+            options: ["Kính mến Đức Chúa Trời và kính trọng cha mẹ", "Tin kính Thiên Chúa và đi lễ ngày Chúa Nhật", "Kính mến một Đức Chúa Trời trên hết mọi sự và yêu người như mình ta vậy", "Giữ đạo công chính và sống công bình"],
+            answer: 2,
+            explanation: "Mười Điều răn ấy tóm về hai điều này mà chớ: trước kính mến một Đức Chúa Trời trên hết mọi sự, sau là yêu người như mình ta vậy."
+        },
+        {
+            question: "Trong Hội Thánh có mấy điều răn?",
+            options: ["4 điều", "5 điều", "6 điều", "10 điều"],
+            answer: 2,
+            explanation: "Hội Thánh có 6 điều răn (1. Dâng lễ, 2. Chớ làm việc xác, 3. Xưng tội, 4. Chịu Mình Thánh, 5. Giữ chay, 6. Kiêng thịt)."
+        },
+        {
+            question: "Ngắm 'Đức Chúa Giêsu chịu Phép Rửa tại sông Giođan' thuộc về Năm sự gì?",
+            options: ["Năm sự Vui", "Năm sự Thương", "Năm sự Mừng", "Năm sự Sáng"],
+            answer: 3,
+            explanation: "Thuộc Thứ nhất Năm sự Sáng: Đức Chúa Giêsu chịu Phép Rửa tại sông Giođan. Xin cho được sống xứng đáng làm con Chúa."
+        },
+        {
+            question: "Ngắm 'Đức Chúa Giêsu lo buồn đổ mồ hôi máu' thuộc về Năm sự gì?",
+            options: ["Năm sự Vui", "Năm sự Thương", "Năm sự Mừng", "Năm sự Sáng"],
+            answer: 1,
+            explanation: "Thuộc Thứ nhất Năm sự Thương. Xin cho được ăn năn tội nên."
+        },
+        {
+            question: "Ngắm 'Đức Chúa Giêsu lên trời' thuộc về Năm sự gì?",
+            options: ["Năm sự Vui", "Năm sự Thương", "Năm sự Mừng", "Năm sự Sáng"],
+            answer: 2,
+            explanation: "Thuộc Thứ hai Năm sự Mừng. Xin cho được ái mộ những sự trên trời."
+        }
+    ];
+
+    // Variables
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let streak = 0;
+    let answered = false;
+    
+    // Xáo trộn ngẫu nhiên mảng câu hỏi
+    const shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+
+    // DOM Elements
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const explanationBox = document.getElementById('explanation-box');
+    const explanationText = document.getElementById('explanation-text');
+    const btnNext = document.getElementById('btn-next');
+    const progressBar = document.getElementById('progress-bar');
+    const questionCountText = document.getElementById('question-count');
+    const streakCounter = document.getElementById('streak-counter');
+    const finalScore = document.getElementById('final-score');
+    const resultMessage = document.getElementById('result-message');
+
+    function startQuiz() {
+        startScreen.style.display = 'none';
+        quizScreen.style.display = 'block';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        answered = false;
+        btnNext.style.display = 'none';
+        explanationBox.style.display = 'none';
+        optionsContainer.innerHTML = '';
+        
+        const q = shuffledQuestions[currentQuestionIndex];
+        questionText.innerHTML = q.question;
+        
+        // Update Stats
+        questionCountText.innerText = `Câu: ${currentQuestionIndex + 1}/${shuffledQuestions.length}`;
+        const progressPercent = ((currentQuestionIndex) / shuffledQuestions.length) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+
+        // Render Options
+        q.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.innerText = `${String.fromCharCode(65 + index)}. ${option}`; // A, B, C, D
+            button.classList.add('option-btn');
+            button.onclick = () => selectAnswer(index, button);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function selectAnswer(selectedIndex, buttonClicked) {
+        if (answered) return;
+        answered = true;
+        
+        const q = shuffledQuestions[currentQuestionIndex];
+        const buttons = document.querySelectorAll('.option-btn');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedIndex === q.answer) {
+            buttonClicked.classList.add('correct');
+            score++;
+            streak++;
+            streakCounter.innerText = `🔥 Streak: ${streak}`;
+            streakCounter.style.color = '#10b981';
+        } else {
+            buttonClicked.classList.add('incorrect');
+            buttons[q.answer].classList.add('correct');
+            streak = 0;
+            streakCounter.innerText = `🔥 Streak: ${streak}`;
+            streakCounter.style.color = '#6b7280';
+        }
+
+        // Hiện giải thích và nút Next
+        explanationText.innerHTML = `<strong>Đáp án đúng: ${String.fromCharCode(65 + q.answer)}</strong><br>${q.explanation}`;
+        explanationBox.style.display = 'block';
+        btnNext.style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        quizScreen.style.display = 'none';
+        resultScreen.style.display = 'block';
+        
+        finalScore.innerText = `${score}/${shuffledQuestions.length}`;
+        
+        const percentage = (score / shuffledQuestions.length) * 100;
+        if (percentage === 100) {
+            resultMessage.innerText = "Tuyệt vời! Bạn nắm rất vững giáo lý!";
+            resultMessage.style.color = "#10b981";
+        } else if (percentage >= 70) {
+            resultMessage.innerText = "Rất tốt! Kiến thức của bạn khá chắc chắn.";
+            resultMessage.style.color = "#2563eb";
+        } else {
+            resultMessage.innerText = "Hãy cố gắng ôn tập thêm nhé. Chúa luôn đồng hành cùng bạn!";
+            resultMessage.style.color = "#f59e0b";
+        }
+    }
+</script>
+
+</body>
+</html>
